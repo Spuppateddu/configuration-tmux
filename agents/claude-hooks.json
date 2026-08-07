@@ -1,0 +1,10 @@
+{
+  "_comment": "Claude Code hook event -> a script under ../scripts/ plus its arguments. install.sh expands each entry into a real hook in ~/.claude/settings.json. PostToolUse is what flips the marker back to [~] after you answer a permission prompt - without it the tab would stay [ ] until the turn ended. Notification goes through agent_notify.sh because that one event means two different things (see the script).",
+
+  "SessionStart": ["agent_state.sh", "done"],
+  "UserPromptSubmit": ["agent_state.sh", "busy"],
+  "PostToolUse": ["agent_state.sh", "busy"],
+  "Notification": ["agent_notify.sh"],
+  "Stop": ["agent_state.sh", "done"],
+  "SessionEnd": ["agent_state.sh", "clear"]
+}

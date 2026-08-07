@@ -1,0 +1,111 @@
+# Prefix key
+unbind C-b
+set -g prefix `
+
+bind-key ` last-window
+# Clear screen, then wipe scrollback. Backgrounded: an inline `run-shell sleep`
+# blocks tmux's command queue and freezes every pane for 300ms.
+bind u send-keys C-l \; run-shell -b 'sleep .3; tmux clear-history -t "#{pane_id}"'
+
+# Clipboard copy with xclip
+bind -T copy-mode-vi y send -X copy-pipe-and-cancel "xclip -selection clipboard -in"
+set -s set-clipboard on
+set -as terminal-features ',rxvt-unicode-256color:clipboard'
+
+# Alacritty's cnorm stops the blink then shows the cursor, and tmux writes it on
+# detach — killing the blink for good. Keep only the show-cursor half.
+set -sa terminal-overrides ',alacritty*:cnorm=\E[?25h'
+
+set -g mouse on
+
+set-option -g history-limit 5000
+set -g status-position bottom
+
+# Vim keybindings
+setw -g mode-keys vi
+bind-key h select-pane -L
+bind-key j select-pane -D
+bind-key k select-pane -U
+bind-key l select-pane -R
+
+# Resize the current pane with Ctrl+Shift+Arrows
+bind -n C-S-Down resize-pane -D 5
+bind -n C-S-Up resize-pane -U 5
+bind -n C-S-Left resize-pane -L 5
+bind -n C-S-Right resize-pane -R 5
+
+# Start numbering at 1
+set -g base-index 1
+set -g pane-base-index 1
+set-window-option -g pane-base-index 1
+set -g renumber-windows on
+
+# Windows are named by name_windows.sh (hooked into the status line below),
+# which resolves node/python tools to their real name. Off to avoid a tug of war.
+set -g automatic-rename off
+
+# PLUGINS
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'christoomey/vim-tmux-navigator'
+set -g @plugin 'dracula/tmux'
+
+# THEME SETTINGS
+set -g @dracula-show-powerline 1
+# CPU/RAM/hostname only earn their space over SSH; locally cwd gets the room.
+# Clock and git branch are removed by omission — they are plugins, not toggles.
+if-shell '[ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]' \
+  'set -g @dracula-plugins "cwd cpu-usage ram-usage ssh-session"' \
+  'set -g @dracula-plugins "cwd"'
+set -g @dracula-show-left-icon session
+
+set -g @dracula-colors "
+white='#EBDBB2'
+gray='#282828'
+dark_gray='#282828'
+light_purple='#B16286'
+dark_purple='#CC241D'
+cyan='#689D6A'
+green='#98971A'
+orange='#D65D0E'
+red='#CC241D'
+pink='#D3869B'
+yellow='#D79921'
+"
+
+# split windows in same directory
+bind '"' split-window -v -c "#{pane_current_path}"
+bind % split-window -h -c "#{pane_current_path}"
+bind c new-window -c "#{pane_current_path}"
+
+run '~/.tmux/plugins/tpm/tpm'
+
+# Kill outright, no "(y/n)". After tpm so no plugin can restore the prompt.
+# Backgrounded: chained after kill-pane, select-layout has no target and is dropped.
+unbind-key z
+bind-key z run-shell -b "tmux kill-pane -t '#{pane_id}' ; tmux select-layout -t '#{window_id}' -E 2>/dev/null"
+unbind-key x
+bind-key x kill-window
+
+# Highlight the whole active-pane border (after tpm so dracula can't override).
+# 'arrows' keeps the full outline; 'colour'/'both' paint only half of it.
+set -g pane-border-lines heavy
+set -g pane-border-indicators arrows
+set -g pane-border-status off
+set -g pane-border-style 'fg=#3c3836'
+set -g pane-active-border-style 'fg=#D79921,bold'
+
+# Locate this checkout from #{current_file} (tmux 3.3+, else ~/.tmuxrc); #{q:} makes
+# it shell-safe, so the assignment must stay unquoted. All three run after dracula.
+run-shell 'd=#{q:current_file}; d="${d%/*}"; [ -d "$d/scripts" ] || d="$HOME/.tmuxrc"; "$d/scripts/fast_status.sh"; "$d/scripts/attach_name_poller.sh"; "$d/scripts/tab_format.sh"'
+# 2, not 1: the namer is a #() job that forks every tick regardless. Idle cost is
+# ~3.3% of a core at 1s vs ~1.9% at 2s, with relabel lag still imperceptible.
+set -g status-interval 2
+set-hook -g after-select-pane 'refresh-client -S'
+set-hook -g after-select-window 'refresh-client -S'
+# `-E` spreads splits evenly instead of tmux halving only the pane you split from.
+set-hook -g after-split-window 'select-layout -E ; refresh-client -S'
+# Same on `exit`/Ctrl-D. Deferred: called inline the hook still sees the dying
+# pane as current and spreads nothing.
+set-hook -g pane-exited 'run-shell -b "tmux select-layout -t #{window_id} -E 2>/dev/null"'
+set-hook -g session-window-changed 'refresh-client -S'
