@@ -4,6 +4,8 @@ My personal [tmux](https://github.com/tmux/tmux) configuration — vim-style
 navigation, mouse support, clipboard integration, and the
 [Dracula](https://github.com/dracula/tmux) theme with a Gruvbox color palette.
 
+![tmux with the Dracula status bar and a Gruvbox palette](./pictures/tmux.png)
+
 ## On its own, or as part of best-linux-environment
 
 Both work, and this repo is written not to care which one ran it.
@@ -29,6 +31,7 @@ so a change pushed from another machine is live without a restart.
   locates its own scripts through `#{current_file}`, which older tmux expands
   empty and then falls back to `~/.tmuxrc`
 - [TPM](https://github.com/tmux-plugins/tpm) — the tmux plugin manager
+- `git` — to clone TPM and the plugins
 - `xclip` — for copying to the system clipboard
 - `jq` — only for the AI-agent status wiring in `install.sh`
 
@@ -75,7 +78,7 @@ than overwriting it, and takes `--dry-run` to show what it would do.
 Windows are named after whatever runs in the active pane — `vim`, `lazygit`,
 `claude` — with tools that run under an interpreter resolved to their real name
 rather than showing up as `node` or `python`. `scripts/name_windows.sh` re-checks
-about once a second, driven from the status line.
+every two seconds, driven from the status line (`status-interval`).
 
 A window that is only a shell prompt has nothing to announce, so its tab shows
 just the number:
