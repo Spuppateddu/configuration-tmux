@@ -145,8 +145,25 @@ Two halves make it work, and `./install.sh` sets up both:
   rather than straight to `agent_state.sh`: that one event fires both for
   "needs your permission" *and* for the idle nudge ~60s **after** a turn ends,
   and treating the second as "waiting" would quietly flip a finished `[x]`
-  window back to `[ ]`. opencode needs no such split — it has a real
-  `permission.asked` event.
+  window back to `[ ]`. opencode needs no such split: it publishes a real
+  permission event. It does, though, publish *everything* on one generic
+  `event` hook — its only named hooks are `chat.*`, `tool.*` and
+  `permission.ask` — so the plugin switches on `event.type` itself. Used as a
+  hook key, a bus event name like `session.idle` binds nothing at all: no error,
+  no warning, and the tab then sticks on `[~]` forever. Two more traps in the
+  same area, both worth knowing before you touch that file:
+
+  - **The published types lag the runtime.** `@opencode-ai/sdk` still describes
+    `permission.updated` carrying a `permissionID`; opencode 1.18 actually
+    emits `permission.asked` carrying a `requestID`. The plugin accepts both
+    spellings rather than betting on either.
+  - **A sub-agent is a session of its own,** so a single `session.idle` does not
+    mean your turn is over. The plugin counts busy sessions and only says
+    `[x]` at zero.
+
+  It also paints `[x]` from the plugin's own startup rather than from
+  `session.created`, because opencode creates no session until you send the
+  first prompt — waiting for one leaves a freshly opened window with no marker.
 
 `install.sh` only wires an agent it finds installed, merges into existing config
 rather than overwriting it (your own hooks survive), and is safe to re-run.
