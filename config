@@ -111,14 +111,16 @@ run-shell 'd=#{q:current_file}; d="${d%/*}"; [ -d "$d/scripts" ] || d="$HOME/.tm
 # 2, not 1: the namer is a #() job that forks every tick regardless. Idle cost is
 # ~3.3% of a core at 1s vs ~1.9% at 2s, with relabel lag still imperceptible.
 set -g status-interval 2
-set-hook -g after-select-pane 'refresh-client -S'
-set-hook -g after-select-window 'refresh-client -S'
+# Guarded: with no client attached (`new-session -d`, $mod+c) refresh-client fails
+# and tmux shows "(null):0: no current client" on the next attach.
+set-hook -g after-select-pane "if -F '#{client_name}' 'refresh-client -S'"
+set-hook -g after-select-window "if -F '#{client_name}' 'refresh-client -S'"
 # `-E` spreads splits evenly instead of tmux halving only the pane you split from.
-set-hook -g after-split-window 'select-layout -E ; refresh-client -S'
+set-hook -g after-split-window "select-layout -E ; if -F '#{client_name}' 'refresh-client -S'"
 # Same on `exit`/Ctrl-D. Deferred: called inline the hook still sees the dying
 # pane as current and spreads nothing.
 set-hook -g pane-exited 'run-shell -b "tmux select-layout -t #{window_id} -E 2>/dev/null"'
-set-hook -g session-window-changed 'refresh-client -S'
+set-hook -g session-window-changed "if -F '#{client_name}' 'refresh-client -S'"
 
 # i3's focused-window colour for the prefix+s/w highlight, copy-mode selection
 # and the session name, bottom left. best-linux-environment writes it; no file, dracula stays.
