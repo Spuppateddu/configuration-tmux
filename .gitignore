@@ -5,3 +5,6 @@
 *~
 .idea/
 .vscode/
+
+# Written by best-linux-environment, per machine
+*.local.conf

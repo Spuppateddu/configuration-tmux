@@ -118,3 +118,7 @@ set-hook -g after-split-window 'select-layout -E ; refresh-client -S'
 # pane as current and spreads nothing.
 set-hook -g pane-exited 'run-shell -b "tmux select-layout -t #{window_id} -E 2>/dev/null"'
 set-hook -g session-window-changed 'refresh-client -S'
+
+# i3's focused-window colour for the prefix+s/w highlight, copy-mode selection
+# and the session name, bottom left. best-linux-environment writes it; no file, dracula stays.
+source-file -q "$HOME/.tmuxrc/colors.local.conf"
