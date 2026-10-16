@@ -81,9 +81,10 @@ bind c new-window -c "#{pane_current_path}"
 run '~/.tmux/plugins/tpm/tpm'
 
 # Kill outright, no "(y/n)". After tpm so no plugin can restore the prompt.
-# Backgrounded: chained after kill-pane, select-layout has no target and is dropped.
+# Backgrounded: chained after kill-pane. If that closed the window, select-layout fails;
+# "|| true" stops run-shell from showing "returned 1".
 unbind-key z
-bind-key z run-shell -b "tmux kill-pane -t '#{pane_id}' ; tmux select-layout -t '#{window_id}' -E 2>/dev/null"
+bind-key z run-shell -b "tmux kill-pane -t '#{pane_id}' ; tmux select-layout -t '#{window_id}' -E 2>/dev/null || true"
 unbind-key x
 bind-key x kill-window
 
