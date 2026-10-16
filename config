@@ -87,6 +87,15 @@ bind-key z run-shell -b "tmux kill-pane -t '#{pane_id}' ; tmux select-layout -t 
 unbind-key x
 bind-key x kill-window
 
+# Move this window to another session, picked from a list (scripts/move_window.sh).
+# Replaces tmux's `m` (mark pane). Via run-shell: display-popup expands no #{}.
+bind-key m run-shell -b "tmux display-popup -E -w 60 -h 15 -c '#{client_tty}' \"'#{@tmuxrc_dir}/scripts/move_window.sh' '#{window_id}' '#{client_tty}'\""
+
+# tmux inside tmux (ssh from here): F12 hands every key to the inner one, and F12
+# takes them back. This bar hides meanwhile, so only the inner one shows.
+bind-key -T root F12 set-option prefix None \; set-option key-table off \; set-option status off
+bind-key -T off F12 set-option -u prefix \; set-option -u key-table \; set-option -u status
+
 # Highlight the whole active-pane border (after tpm so dracula can't override).
 # 'arrows' keeps the full outline; 'colour'/'both' paint only half of it.
 set -g pane-border-lines heavy
@@ -97,7 +106,7 @@ set -g pane-active-border-style 'fg=#D79921,bold'
 
 # Locate this checkout from #{current_file} (tmux 3.3+, else ~/.tmuxrc); #{q:} makes
 # it shell-safe, so the assignment must stay unquoted. All three run after dracula.
-run-shell 'd=#{q:current_file}; d="${d%/*}"; [ -d "$d/scripts" ] || d="$HOME/.tmuxrc"; "$d/scripts/fast_status.sh"; "$d/scripts/attach_name_poller.sh"; "$d/scripts/tab_format.sh"'
+run-shell 'd=#{q:current_file}; d="${d%/*}"; [ -d "$d/scripts" ] || d="$HOME/.tmuxrc"; tmux set -g @tmuxrc_dir "$d"; "$d/scripts/fast_status.sh"; "$d/scripts/attach_name_poller.sh"; "$d/scripts/tab_format.sh"'
 # 2, not 1: the namer is a #() job that forks every tick regardless. Idle cost is
 # ~3.3% of a core at 1s vs ~1.9% at 2s, with relabel lag still imperceptible.
 set -g status-interval 2
