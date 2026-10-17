@@ -92,6 +92,10 @@ bind-key x kill-window
 # Replaces tmux's `m` (mark pane). Via run-shell: display-popup expands no #{}.
 bind-key m run-shell -b "tmux display-popup -E -w 60 -h 15 -c '#{client_tty}' \"'#{@tmuxrc_dir}/scripts/move_window.sh' '#{window_id}' '#{client_tty}'\""
 
+# Move this pane inside the session: into a window side by side or stacked, or alone
+# (scripts/move_pane.sh). Replaces tmux's `M` (clear the marked pane).
+bind-key M run-shell -b "tmux display-popup -E -w 60 -h 15 -c '#{client_tty}' \"'#{@tmuxrc_dir}/scripts/move_pane.sh' '#{pane_id}' '#{client_tty}'\""
+
 # tmux inside tmux (ssh from here): F12 hands every key to the inner one, and F12
 # takes them back. This bar hides meanwhile, so only the inner one shows.
 bind-key -T root F12 set-option prefix None \; set-option key-table off \; set-option status off
