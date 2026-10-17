@@ -7,7 +7,7 @@ client=${2:?usage: move_window.sh WINDOW_ID CLIENT_TTY}
 group='#{?session_group,#{session_group},#{session_name}}'
 here=$(tmux display-message -p -t "$win" "$group")
 
-# One name per group: default-2, default-3… are views of 'default'.
+# One name per group: <host>-2, <host>-3… are views of the main <host> session.
 targets=$(tmux list-sessions -F "$group" | sort -u | grep -vxF -- "$here")
 
 if command -v fzf >/dev/null 2>&1; then

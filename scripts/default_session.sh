@@ -1,11 +1,14 @@
 #!/bin/sh
-# Open tmux's 'default' session: create it, or join it with a new window.
+# Open tmux's main session, named after the PC (hostname): create it, or join it
+# with a new window.
 # Alacritty runs it as its shell; bashrc/zshrc run it with --ssh (exit 1 = skipped).
 
-# Each terminal is its own session in default's group (default-2…): same windows,
+# Each terminal is its own session in the main one's group (<host>-2…): same windows,
 # its own current one. A plain `attach` would make two terminals mirror each other.
+# The status bar shows the group's name, so every view reads as the hostname.
 
-SESSION=default
+SESSION=$(hostname -s 2>/dev/null | tr -c 'A-Za-z0-9_\n-' _)
+[ -n "$SESSION" ] || SESSION=default
 mode=${1:-}
 
 skip() {
@@ -27,7 +30,7 @@ if ! tmux has-session -t "=$SESSION" 2>/dev/null; then
 fi
 tmux has-session -t "=$SESSION" 2>/dev/null || skip
 
-# First free default-N; the create itself is the check, so a name race moves on.
+# First free <host>-N; the create itself is the check, so a name race moves on.
 n=2
 while ! tmux new-session -d -t "=$SESSION" -s "$SESSION-$n" 2>/dev/null; do
     n=$((n + 1))
@@ -35,7 +38,7 @@ while ! tmux new-session -d -t "=$SESSION" -s "$SESSION-$n" 2>/dev/null; do
 done
 
 # destroy-unattached drops this view when the terminal closes; windows stay.
-# A fresh 'default' already has its first, empty window: show that one.
+# A fresh main session already has its first, empty window: show that one.
 set -- attach-session -t "=$SESSION-$n" \; set-option destroy-unattached on
 [ "$fresh" = true ] || set -- "$@" \; new-window -c "$PWD"
 

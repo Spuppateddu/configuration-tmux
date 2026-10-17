@@ -190,24 +190,26 @@ backtick inside tmux — paste one if you need it.
 | `prefix` + `x` | Kill the current window (no confirm prompt) |
 | `y` (copy-mode) | Copy selection to system clipboard |
 | `prefix` + `m` | Move the current window to another session and follow it there: type a session name and Enter (made if it doesn't exist), or pick one from the list (replaces tmux's **mark pane**) |
+| `prefix` + `M` | Move the current pane inside this session: pick a window, then side by side or stacked; pick its own window to flip the split, or **new window (alone)** to take it out (replaces tmux's **clear marked pane**) |
 | `F12` | tmux inside tmux: hand every key to the inner one (this bar hides); `F12` again takes them back |
 
-## The 'default' session
+## The main session (named after the PC)
 
 [`scripts/default_session.sh`](./scripts/default_session.sh) opens tmux's
-`default` session, or adds a new window to it when it is already there. Two
-places call it:
+main session, named after the PC (`hostname -s`, e.g. `penelope`), or adds a
+new window to it when it is already there. Two places call it:
 
 - **Alacritty** — it is the terminal's shell (configuration-alacritty), so every
-  new terminal lands in `default`. `alacritty -e CMD` is left alone.
+  new terminal lands in it. `alacritty -e CMD` is left alone.
 - **ssh** — bashrc and zshrc call it with `--ssh` on an interactive login over
   ssh. Leaving tmux ends the login; if tmux can't start, the plain shell carries on.
 
-Each terminal gets its own session in `default`'s group (`default-2`,
-`default-3`…): the same windows, but its own current window. With a plain
+Each terminal gets its own session in the main one's group (`penelope-2`,
+`penelope-3`…): the same windows, but its own current window. With a plain
 `tmux attach`, two terminals side by side would mirror each other. That view
 session goes away when its terminal closes; the windows keep running in
-`default` until you exit them.
+the main session until you exit them. The status bar shows the group's name, so
+every terminal reads `penelope`, not `penelope-2`.
 
 `BLE_NO_TMUX=1` in the environment skips all of it. Inside tmux nothing
 happens, so it never nests on its own — but an ssh login from inside your
