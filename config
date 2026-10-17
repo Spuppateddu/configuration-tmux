@@ -110,8 +110,8 @@ set -g pane-border-style 'fg=#3c3836'
 set -g pane-active-border-style 'fg=#D79921,bold'
 
 # Locate this checkout from #{current_file} (tmux 3.3+, else ~/.tmuxrc); #{q:} makes
-# it shell-safe, so the assignment must stay unquoted. All three run after dracula.
-run-shell 'd=#{q:current_file}; d="${d%/*}"; [ -d "$d/scripts" ] || d="$HOME/.tmuxrc"; tmux set -g @tmuxrc_dir "$d"; "$d/scripts/fast_status.sh"; "$d/scripts/attach_name_poller.sh"; "$d/scripts/tab_format.sh"'
+# it shell-safe, so the assignment must stay unquoted. All four run after dracula.
+run-shell 'd=#{q:current_file}; d="${d%/*}"; [ -d "$d/scripts" ] || d="$HOME/.tmuxrc"; tmux set -g @tmuxrc_dir "$d"; "$d/scripts/fast_status.sh"; "$d/scripts/attach_name_poller.sh"; "$d/scripts/tab_format.sh"; "$d/scripts/updates_status.sh"'
 # 2, not 1: the namer is a #() job that forks every tick regardless. Idle cost is
 # ~3.3% of a core at 1s vs ~1.9% at 2s, with relabel lag still imperceptible.
 set -g status-interval 2

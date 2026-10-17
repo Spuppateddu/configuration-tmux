@@ -228,3 +228,7 @@ window never closes the terminal.
   shows the working directory; CPU, RAM and the SSH-session name are added only
   when the tmux server was started from an SSH login, since on the local machine
   they're already known.
+  Over SSH, the far left of the right side also shows how many apt updates are
+  waiting on this machine (`scripts/updates.sh`, from best-linux-environment's
+  `b-update --count`). That one is decided per client, from the client's own
+  environment, so a terminal at the desk never shows it: the i3 bar has it.
