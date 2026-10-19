@@ -197,7 +197,9 @@ backtick inside tmux — paste one if you need it.
 
 [`scripts/default_session.sh`](./scripts/default_session.sh) opens tmux's
 main session, named after the PC (`hostname -s`, e.g. `penelope`), or adds a
-new window to it when it is already there. Two places call it:
+new window to it when it is already there. If a pane in it is an idle shell in
+the folder the terminal opens in (most often `~`), it focuses that pane instead
+of making a new window. Two places call it:
 
 - **Alacritty** — it is the terminal's shell (configuration-alacritty), so every
   new terminal lands in it. `alacritty -e CMD` is left alone.

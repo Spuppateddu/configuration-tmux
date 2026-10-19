@@ -37,10 +37,22 @@ while ! tmux new-session -d -t "=$SESSION" -s "$SESSION-$n" 2>/dev/null; do
     [ "$n" -gt 99 ] && skip
 done
 
-# destroy-unattached drops this view when the terminal closes; windows stay.
+# An idle shell already in this folder (most often ~) is reused: focus it, no new window.
 # A fresh main session already has its first, empty window: show that one.
+reuse=
+if [ "$fresh" = false ]; then
+    reuse=$(tmux list-panes -s -t "=$SESSION" \
+        -F '#{window_id} #{pane_id} #{pane_current_command} #{pane_current_path}' |
+        awk -v dir="$PWD" '$3 ~ /^-?(ba|z|fi|da)?sh$/ && substr($0, index($0, $4)) == dir {
+            print $1, $2; exit }')
+fi
+if [ -n "$reuse" ]; then
+    tmux select-window -t "=$SESSION-$n:${reuse% *}" \; select-pane -t "${reuse#* }"
+fi
+
+# destroy-unattached drops this view when the terminal closes; windows stay.
 set -- attach-session -t "=$SESSION-$n" \; set-option destroy-unattached on
-[ "$fresh" = true ] || set -- "$@" \; new-window -c "$PWD"
+[ "$fresh" = true ] || [ -n "$reuse" ] || set -- "$@" \; new-window -c "$PWD"
 
 [ "$mode" = --ssh ] && { tmux "$@"; exit; }
 exec tmux "$@"
