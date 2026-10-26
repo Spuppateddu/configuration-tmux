@@ -113,16 +113,15 @@ tmux setw -u @auto_name
 
 Windows running an AI agent get a checkbox marker on the tab:
 
-| Marker | Color | Meaning |
-| --- | --- | --- |
-| `[~]` | bright blue `#83A598` | working |
-| `[ ]` | bright orange `#FE8019` | waiting for your input (permission / prompt) |
-| `[x]` | bright green `#B8BB26` | finished its turn |
+| Marker | Meaning |
+| --- | --- |
+| `[~]` | working |
+| `[ ]` | waiting for your input (permission / prompt) |
+| `[x]` | finished its turn |
 
-The state is in the glyph, so it reads the same whether or not you can pick the
-color out of a busy status line. Color stays on as a redundant cue, drawn by
-tmux (`#[fg=...]`) rather than as a colored emoji, so it shows up in urxvt —
-which renders emoji monochrome.
+The state is in the glyph alone, in the tab's own text colour: a marker with a
+colour of its own could not be read on every tab colour, the focused one above
+all.
 
 Two halves make it work, and `./install.sh` sets up both:
 

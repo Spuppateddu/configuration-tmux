@@ -9,12 +9,11 @@ dir="${0%/*}"
 [ "$dir" = "$0" ] && dir=.
 NAME="$dir/window_name.sh"
 
-# Marker for agent windows, from @agent_state. Glyph not emoji so it survives
-# urxvt; TABFG is restored after, as #[default] clobbers the focused tab.
-TABFG='#EBDBB2'                            # dracula white = normal window-tab fg
-BUSY="#[fg=#83A598][~]#[fg=$TABFG] "       # working            (bright blue)
-WAIT="#[fg=#FE8019][ ]#[fg=$TABFG] "       # waiting for input  (bright orange)
-DONE="#[fg=#B8BB26][x]#[fg=$TABFG] "       # finished / ready   (bright green)
+# Marker for agent windows, from @agent_state. No colour of its own: the tab's
+# text colour reads on any tab, the focused one included.
+BUSY="[~] "   # working
+WAIT="[ ] "   # waiting for input
+DONE="[x] "   # finished / ready
 
 # US/RS rather than printable delimiters: window names are free text, and one
 # containing the separator would shift every field after it.
