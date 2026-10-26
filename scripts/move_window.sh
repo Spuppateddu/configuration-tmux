@@ -40,5 +40,14 @@ tmux has-session -t "=$dest" 2>/dev/null ||
 set -- switch-client -c "$client" -t "=$dest" \; move-window -s "$win" -t "=$dest:" \
     \; select-window -t "=$dest:$win"
 [ -n "$spare" ] && set -- "$@" \; kill-window -t "$spare"
+# renumber-windows only acts when a window closes, not when it moves out: close
+# the gap left behind (1 2 4 5 -> 1 2 3 4). A last window takes its session along.
+# Each view of a group (<host>-2…) keeps its own numbers, so each is renumbered.
+if [ "$(tmux display-message -p -t "$win" '#{session_windows}')" -gt 1 ]; then
+    for s in $(tmux list-sessions -F "#{session_id}	$group" |
+            awk -F '\t' -v g="$here" '$2 == g { print $1 }'); do
+        set -- "$@" \; move-window -r -t "$s"
+    done
+fi
 # -d: tmux-sensible's display-time keeps a message up for 4 s; this one needs 1.
 tmux "$@" \; display-message -d 1000 -c "$client" "Window moved to session '$dest'"
