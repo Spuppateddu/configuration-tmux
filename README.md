@@ -229,7 +229,7 @@ window never closes the terminal.
 - [tmux-sensible](https://github.com/tmux-plugins/tmux-sensible) — sane defaults
 - [vim-tmux-navigator](https://github.com/christoomey/vim-tmux-navigator) — seamless vim ↔ tmux pane navigation
 - [dracula/tmux](https://github.com/dracula/tmux) — status bar theme. Always
-  shows the working directory; CPU, RAM and the SSH-session name are added only
+  shows the working directory; CPU and RAM are added only
   when the tmux server was started from an SSH login, since on the local machine
   they're already known.
   Over SSH, the far left of the right side also shows how many apt updates are

@@ -52,10 +52,10 @@ set -g @plugin 'dracula/tmux'
 
 # THEME SETTINGS
 set -g @dracula-show-powerline 1
-# CPU/RAM/hostname only earn their space over SSH; locally cwd gets the room.
+# CPU/RAM only earn their space over SSH; locally cwd gets the room.
 # Clock and git branch are removed by omission — they are plugins, not toggles.
 if-shell '[ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]' \
-  'set -g @dracula-plugins "cwd cpu-usage ram-usage ssh-session"' \
+  'set -g @dracula-plugins "cwd cpu-usage ram-usage"' \
   'set -g @dracula-plugins "cwd"'
 set -g @dracula-show-left-icon session
 
