@@ -203,7 +203,10 @@ of making a new window. Two places call it:
 - **Alacritty** — it is the terminal's shell (configuration-alacritty), so every
   new terminal lands in it. `alacritty -e CMD` is left alone.
 - **ssh** — bashrc and zshrc call it with `--ssh` on an interactive login over
-  ssh. Leaving tmux ends the login; if tmux can't start, the plain shell carries on.
+  ssh. Closing a session there (`prefix`+`z`, `prefix`+`x`, `exit`) never ends the
+  login: you land in another session (the main one when it is there), or in a fresh
+  main session when nothing is left. Only a detach (`prefix`+`d`) ends it — or close
+  the local pane that runs ssh. If tmux can't start, the plain shell carries on.
 
 Each terminal gets its own session in the main one's group (`penelope-2`,
 `penelope-3`…): the same windows, but its own current window. With a plain

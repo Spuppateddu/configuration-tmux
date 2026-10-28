@@ -87,6 +87,10 @@ unbind-key z
 bind-key z run-shell -b "tmux kill-pane -t '#{pane_id}' ; tmux select-layout -t '#{window_id}' -E 2>/dev/null || true"
 unbind-key x
 bind-key x kill-window
+# Over ssh, closing a session (z, x, exit) jumps to another free one, never ends the login.
+# The main session is always free (each terminal is a view of it); default_session.sh redoes it.
+if-shell '[ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]' \
+  'set -g detach-on-destroy no-detached'
 
 # Move this pane inside the session: split into a window, or alone at any position (reorders
 # windows). scripts/move_pane.sh; replaces tmux's `m`. Via run-shell: display-popup expands no #{}.

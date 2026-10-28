@@ -54,5 +54,11 @@ fi
 set -- attach-session -t "=$SESSION-$n" \; set-option destroy-unattached on
 [ "$fresh" = true ] || [ -n "$reuse" ] || set -- "$@" \; new-window -c "$PWD"
 
-[ "$mode" = --ssh ] && { tmux "$@"; exit; }
+# Over ssh, closing the last window of everything (z, x, exit) opens a fresh main
+# session; only a detach (main session still there) ends the login.
+if [ "$mode" = --ssh ]; then
+    tmux "$@"
+    tmux has-session -t "=$SESSION" 2>/dev/null && exit 0
+    exec "$0" --ssh
+fi
 exec tmux "$@"
