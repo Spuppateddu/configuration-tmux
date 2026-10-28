@@ -188,8 +188,8 @@ backtick inside tmux — paste one if you need it.
 | `prefix` + `z` | Kill the current pane (replaces tmux's default pane **zoom**, which is left unbound) |
 | `prefix` + `x` | Kill the current window (no confirm prompt) |
 | `y` (copy-mode) | Copy selection to system clipboard |
-| `prefix` + `m` | Move the current window to another session and follow it there: type a session name and Enter (made if it doesn't exist), or pick one from the list (replaces tmux's **mark pane**) |
-| `prefix` + `M` | Move the current pane inside this session: pick a window, then side by side or stacked; pick its own window to flip the split, or **new window (alone)** to take it out (replaces tmux's **clear marked pane**) |
+| `prefix` + `m` | Move the current pane inside this session: pick a window, then side by side or stacked (pick its own window to flip the split); or pick **alone, as window N** to take it out of the split into its own window at that position. On a pane already alone it reads **move window to position N**, so it also reorders the windows (replaces tmux's **mark pane**) |
+| `prefix` + `M` | Move the current window to another session and follow it there: type a session name and Enter (made if it doesn't exist), or pick one from the list (replaces tmux's **clear marked pane**) |
 | `F12` | tmux inside tmux: hand every key to the inner one (this bar hides); `F12` again takes them back |
 
 ## The main session (named after the PC)

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Move a window to another session and follow it there; a new name makes a new
-# session. Run by `prefix m` in a popup. Usage: move_window.sh WINDOW_ID CLIENT_TTY
+# session. Run by `prefix M` in a popup. Usage: move_window.sh WINDOW_ID CLIENT_TTY
 
 win=${1:?usage: move_window.sh WINDOW_ID CLIENT_TTY}
 client=${2:?usage: move_window.sh WINDOW_ID CLIENT_TTY}
