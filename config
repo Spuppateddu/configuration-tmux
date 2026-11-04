@@ -1,3 +1,7 @@
+# Panes use the login shell from passwd, not $SHELL: the server may be started by
+# boot.sh under cron, where $SHELL is /bin/sh, and it keeps that value until it dies.
+run-shell 's=$(getent passwd "$(id -un)" | cut -d: -f7); [ -x "$s" ] && tmux set -g default-shell "$s"; true'
+
 # Prefix key
 unbind C-b
 set -g prefix `
