@@ -2,6 +2,9 @@
 # Move a pane inside its session: into a window side by side or stacked, or out
 # into a window alone at any position. Run by `prefix m` in a popup. Usage: move_pane.sh PANE_ID CLIENT_TTY
 
+# fzf is often in ~/.local/bin, which the tmux server's PATH may not have.
+PATH="$HOME/.local/bin:$PATH"
+
 pane=${1:?usage: move_pane.sh PANE_ID CLIENT_TTY}
 client=${2:?usage: move_pane.sh PANE_ID CLIENT_TTY}
 # The terminal's own session: in a group (<host>-2…) the windows are shared, the current one is not.
@@ -43,6 +46,8 @@ pick() {
         printf '%s\n' "$list" | cut -f2- | nl -w2 -s') ' >&2
         printf '%s (number): ' "$1" >&2
         read -r n </dev/tty
+        # Esc arrives as text (^[), like any non-number: cancel.
+        case $n in '' | *[!0-9]*) return 0 ;; esac
         printf '%s\n' "$list" | sed -n "${n}p"
     fi
 }

@@ -2,6 +2,9 @@
 # Move a window to another session and follow it there; a new name makes a new
 # session. Run by `prefix M` in a popup. Usage: move_window.sh WINDOW_ID CLIENT_TTY
 
+# fzf is often in ~/.local/bin, which the tmux server's PATH may not have.
+PATH="$HOME/.local/bin:$PATH"
+
 win=${1:?usage: move_window.sh WINDOW_ID CLIENT_TTY}
 client=${2:?usage: move_window.sh WINDOW_ID CLIENT_TTY}
 group='#{?session_group,#{session_group},#{session_name}}'
@@ -24,6 +27,8 @@ else
     read -r dest
 fi
 [ -n "$dest" ] || exit 0
+# Esc at the plain prompt arrives as text (^[): treat it as cancel.
+case "$dest" in *"$(printf '\033')"*) exit 0 ;; esac
 
 # tmux reads '.' and ':' in a session name as window/pane separators.
 case "$dest" in
