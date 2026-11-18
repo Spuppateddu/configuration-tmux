@@ -236,3 +236,8 @@ window never closes the terminal.
   waiting on this machine (`scripts/updates.sh`, from best-linux-environment's
   `b-update --count`). That one is decided per client, from the client's own
   environment, so a terminal at the desk never shows it: the i3 bar has it.
+  On a terminal narrower than 100 columns (a phone over SSH) the bar wraps into
+  two rows (`scripts/status_rows.sh`): the cwd on the left and CPU/RAM on the
+  right of the top row; the session name and tabs on the left and the updates
+  counter on the right of the bottom row. It is set per session on every resize,
+  so the desk keeps its single row.

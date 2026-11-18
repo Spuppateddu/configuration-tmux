@@ -118,8 +118,9 @@ set -g pane-border-style 'fg=#3c3836'
 set -g pane-active-border-style 'fg=#D79921,bold'
 
 # Locate this checkout from #{current_file} (tmux 3.3+, else ~/.tmuxrc); #{q:} makes
-# it shell-safe, so the assignment must stay unquoted. All four run after dracula.
-run-shell 'd=#{q:current_file}; d="${d%/*}"; [ -d "$d/scripts" ] || d="$HOME/.tmuxrc"; tmux set -g @tmuxrc_dir "$d"; "$d/scripts/fast_status.sh"; "$d/scripts/attach_name_poller.sh"; "$d/scripts/tab_format.sh"; "$d/scripts/updates_status.sh"'
+# it shell-safe, so the assignment must stay unquoted. All of them run after dracula;
+# status_rows.sh last, since it splits the status-right the others built.
+run-shell 'd=#{q:current_file}; d="${d%/*}"; [ -d "$d/scripts" ] || d="$HOME/.tmuxrc"; tmux set -g @tmuxrc_dir "$d"; "$d/scripts/fast_status.sh"; "$d/scripts/attach_name_poller.sh"; "$d/scripts/tab_format.sh"; "$d/scripts/updates_status.sh"; "$d/scripts/status_rows.sh"'
 # 2, not 1: the namer is a #() job that forks every tick regardless. Idle cost is
 # ~3.3% of a core at 1s vs ~1.9% at 2s, with relabel lag still imperceptible.
 set -g status-interval 2
@@ -133,6 +134,10 @@ set-hook -g after-split-window "select-layout -E ; if -F '#{client_name}' 'refre
 # pane as current and spreads nothing.
 set-hook -g pane-exited 'run-shell -b "tmux select-layout -t #{window_id} -E 2>/dev/null"'
 set-hook -g session-window-changed "if -F '#{client_name}' 'refresh-client -S'"
+# Two status rows on a narrow terminal (a phone), one on a wide one: scripts/status_rows.sh.
+set-hook -g client-resized 'run-shell -b "#{@tmuxrc_dir}/scripts/status_rows.sh #{q:session_name} #{client_width}"'
+set-hook -g client-attached 'run-shell -b "#{@tmuxrc_dir}/scripts/status_rows.sh #{q:session_name} #{client_width}"'
+set-hook -g client-session-changed 'run-shell -b "#{@tmuxrc_dir}/scripts/status_rows.sh #{q:session_name} #{client_width}"'
 
 # i3's focused colour on the prefix+s/w highlight, copy mode, current tab and pane; its
 # unfocused one on the session name. best-linux-environment writes it; no file, dracula stays.
