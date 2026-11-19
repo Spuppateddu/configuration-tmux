@@ -50,9 +50,13 @@ if [ -n "$reuse" ]; then
     tmux select-window -t "=$SESSION-$n:${reuse% *}" \; select-pane -t "${reuse#* }"
 fi
 
+# The new window opens before the attach: tmux sizes a window to the terminal that
+# landed on it last, so attaching on the main one's current window first would shrink
+# it to this terminal's size (a tmux behind F12 there gets a strip of border and dots).
+[ "$fresh" = true ] || [ -n "$reuse" ] || tmux new-window -t "=$SESSION-$n:" -c "$PWD"
+
 # destroy-unattached drops this view when the terminal closes; windows stay.
 set -- attach-session -t "=$SESSION-$n" \; set-option destroy-unattached on
-[ "$fresh" = true ] || [ -n "$reuse" ] || set -- "$@" \; new-window -c "$PWD"
 
 # Over ssh, closing the last window of everything (z, x, exit) opens a fresh main
 # session; only a detach (main session still there) ends the login.
