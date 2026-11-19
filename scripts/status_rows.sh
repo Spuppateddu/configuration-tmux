@@ -1,35 +1,18 @@
 #!/usr/bin/env bash
-# Two status rows on a narrow terminal (a phone over ssh), one row on a wide one.
-#   Top row:    cwd on the left, CPU/RAM on the right.
+# Two status rows, on every terminal (the desk and a phone over ssh alike).
+#   Top row:    cwd on the left, CPU/RAM on the right (over ssh only).
 #   Bottom row: session name and tabs on the left, the updates counter on the right.
 #
-# status_rows.sh                     build both rows from status-right (after dracula,
-#                                    fast_status.sh and updates_status.sh), then apply
-#                                    them to every attached client.
-# status_rows.sh <session> <width>   apply to one session (from the client-resized hooks).
-#
-# Set per session, not globally: each terminal is its own grouped session, so the
-# phone gets two rows while the desk keeps one.
+# Builds both rows from status-right (after dracula, fast_status.sh and
+# updates_status.sh) and sets them globally, so every session gets them.
 
 set -u
-narrow=100   # columns: below this the bar wraps into two rows
 
-apply() {
-  local s="$1" w="$2"
-  case "$w" in ''|*[!0-9]*) return 0 ;; esac
-  if [ "$w" -lt "$narrow" ]; then
-    tmux set -t "$s" status 2 \; \
-      set -t "$s" 'status-format[0]' "$(tmux show -gqv @status_rows_top)" \; \
-      set -t "$s" 'status-format[1]' "$(tmux show -gqv @status_rows_bottom)"
-  else
-    tmux set -t "$s" -u status \; set -t "$s" -u status-format
-  fi
-}
-
-if [ $# -ge 2 ]; then
-  apply "$1" "$2"
-  exit 0
-fi
+# Start from tmux's own single-row format, so a re-source (or a session left with
+# its own rows by an older version of this script) splits the real one again.
+tmux set -gu status \; set -gu status-format
+tmux list-sessions -F '#{session_name}' 2>/dev/null |
+  while IFS= read -r s; do tmux set -t "$s" -u status \; set -t "$s" -u status-format; done
 
 right="$(tmux show -gqv status-right)"
 row0="$(tmux show -gqv 'status-format[0]')"
@@ -48,8 +31,6 @@ rest="${right#"$upd"}"
 cwd="${rest%%#\[fg=#282828\]*}"
 tail="${rest#"$cwd"}"
 
-tmux set -g @status_rows_top "#[align=left]${cwd}#[default]#[align=right]${tail}#[default]"
-tmux set -g @status_rows_bottom "${tabs}#[nolist align=right default]${upd}#[default]"
-
-tmux list-clients -F '#{session_name}	#{client_width}' 2>/dev/null |
-  while IFS=$'\t' read -r s w; do apply "$s" "$w"; done
+tmux set -g status 2 \; \
+  set -g 'status-format[0]' "#[align=left]${cwd}#[default]#[align=right]${tail}#[default]" \; \
+  set -g 'status-format[1]' "${tabs}#[nolist align=right default]${upd}#[default]"
