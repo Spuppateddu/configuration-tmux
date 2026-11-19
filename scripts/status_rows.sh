@@ -10,9 +10,14 @@ set -u
 
 # Start from tmux's own single-row format, so a re-source (or a session left with
 # its own rows by an older version of this script) splits the real one again.
+# A session behind F12 (key-table off) keeps its own `status off`: clearing it would
+# bring the outer bar back over the nested tmux.
 tmux set -gu status \; set -gu status-format
 tmux list-sessions -F '#{session_name}' 2>/dev/null |
-  while IFS= read -r s; do tmux set -t "$s" -u status \; set -t "$s" -u status-format; done
+  while IFS= read -r s; do
+    tmux set -t "$s" -u status-format
+    [ "$(tmux show -t "$s" -qv key-table)" = off ] || tmux set -t "$s" -u status
+  done
 
 right="$(tmux show -gqv status-right)"
 row0="$(tmux show -gqv 'status-format[0]')"

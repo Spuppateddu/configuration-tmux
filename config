@@ -134,6 +134,10 @@ set-hook -g after-split-window "select-layout -E ; if -F '#{client_name}' 'refre
 # pane as current and spreads nothing.
 set-hook -g pane-exited 'run-shell -b "tmux select-layout -t #{window_id} -E 2>/dev/null"'
 set-hook -g session-window-changed "if -F '#{client_name}' 'refresh-client -S'"
+# An older version ran status_rows.sh from these; a re-source keeps old hooks, so drop them.
+set-hook -gu client-attached
+set-hook -gu client-resized
+set-hook -gu client-session-changed
 
 # i3's focused colour on the prefix+s/w highlight, copy mode, current tab and pane; its
 # unfocused one on the session name. best-linux-environment writes it; no file, dracula stays.
