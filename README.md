@@ -138,27 +138,49 @@ Two halves make it work, and `./install.sh` sets up both:
   | Agent | Wired into | Source of truth |
   | --- | --- | --- |
   | Claude Code | `~/.claude/settings.json` hooks | `agents/claude-hooks.json` |
-  | opencode | `~/.config/opencode/plugins/tmux-status.js` | `agents/opencode-tmux-status.js` |
+  | opencode | `~/.config/opencode/plugins/tmux-status/` | `agents/opencode-tmux-status/` |
 
   Claude Code's `Notification` hook goes through `scripts/agent_notify.sh`
   rather than straight to `agent_state.sh`: that one event fires both for
   "needs your permission" *and* for the idle nudge ~60s **after** a turn ends,
   and treating the second as "waiting" would quietly flip a finished `[x]`
   window back to `[ ]`. opencode needs no such split: it publishes a real
-  permission event. It does, though, publish *everything* on one generic
-  `event` hook — its only named hooks are `chat.*`, `tool.*` and
-  `permission.ask` — so the plugin switches on `event.type` itself. Used as a
-  hook key, a bus event name like `session.idle` binds nothing at all: no error,
-  no warning, and the tab then sticks on `[~]` forever. Two more traps in the
-  same area, both worth knowing before you touch that file:
+  permission event. The plugin targets **opencode 2** only (opencode 1 is not
+  supported any more). Things worth knowing before you touch it:
 
-  - **The published types lag the runtime.** `@opencode-ai/sdk` still describes
-    `permission.updated` carrying a `permissionID`; opencode 1.18 actually
-    emits `permission.asked` carrying a `requestID`. The plugin accepts both
-    spellings rather than betting on either.
-  - **A sub-agent is a session of its own,** so a single `session.idle` does not
-    mean your turn is over. The plugin counts busy sessions and only says
-    `[x]` at zero.
+  - **It is a TUI plugin, not a server plugin.** opencode 2 runs one shared
+    background server (`opencode serve --service`) and every opencode window
+    talks to it. A server plugin runs inside that server, so its `$TMUX_PANE`
+    is the pane that first started the server: it would paint the wrong tab.
+    `tui.js` runs inside each window's own process, with that window's pane.
+  - **Plugin folder.** A plugin can be a folder: opencode loads `server.js` (or
+    `index.js`) on the server and `tui.js` in each window. The server refuses a
+    folder with no server entry ("Plugin entrypoint not found"), hence the empty
+    `server.js`. A single file in `plugins/` is always a server plugin.
+  - **Plugin format.** `export default { id, setup(ctx) }`. The opencode 1 style
+    (`export const X = async ({ $ }) => ({ event })`) fails to load with "Plugin
+    must export a default definition with an id and an effect or setup
+    function". `setup` may return a cleanup function, run when opencode quits.
+    There is no `$` shell, so the plugin calls `agent_state.sh` with
+    `node:child_process`. In the TUI, the router is `ctx.ui.router`.
+  - **Events.** `ctx.data.listen(({ details }) => …)` gets every event, with the
+    payload in `details.data` (not `properties`). The turn starts with
+    `session.execution.started` and ends with `session.execution.succeeded` /
+    `failed` / `interrupted`. Permissions are `permission.asked` (`data.id`) and
+    `permission.replied` (`data.requestID`). The question tool is now a "form":
+    `form.created` (`data.form.id`), then `form.replied` or `form.cancelled`
+    (`data.id`). Types: the `@opencode/client` npm package
+    (`dist/promise/generated/types.d.ts`); plugin API: `@opencode/plugin`
+    (`dist/tui/context.d.ts`).
+  - **Each window sees the events of all windows,** because they share the
+    server. The plugin keeps state for every session but paints only the
+    session this window shows (`ctx.ui.router.current()`) and its sub-agents
+    (sessions whose `parentID` leads back to it). The route has no event of its
+    own, so it repaints on every event; a repaint that changes nothing spawns
+    no tmux call.
+  - **A sub-agent is a session of its own,** so one finished session does not
+    mean your turn is over. The window says `[x]` only when none of its
+    sessions is busy.
 
   It also paints `[x]` from the plugin's own startup rather than from
   `session.created`, because opencode creates no session until you send the

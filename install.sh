@@ -259,30 +259,34 @@ wire_claude() {
 }
 
 wire_opencode() {
-    local src="$REPO/agents/opencode-tmux-status.js"
+    # opencode 2: a plugin folder with a tui.js (the real work) and an empty
+    # server.js (the server refuses a folder without one). See the README.
+    local src="$REPO/agents/opencode-tmux-status"
     local rendered template path_js stale
-    local dir="$HOME/.config/opencode/plugins"
-    local dest="$dir/tmux-status.js"
+    local dest="$HOME/.config/opencode/plugins/tmux-status"
 
     # jq -Rs yields a JSON string (quotes included) that is also a valid JS literal,
     # hence the bare placeholder. Not sed: a path with & or / would corrupt it.
     path_js="$(printf '%s' "$AGENT_STATE_SH" | jq -Rs .)"
-    template="$(<"$src")"
+    template="$(<"$src/tui.js")"
     rendered="${template//__AGENT_STATE_SH__/$path_js}"
 
-    # opencode reads both plugin/ and plugins/, so a copy an earlier install left
-    # in plugin/ fires every event twice. Remove it, if it's recognisably ours.
-    stale="$HOME/.config/opencode/plugin/tmux-status.js"
-    if [[ -f "$stale" ]] && grep -q 'export const TmuxStatus' "$stale"; then
-        if [[ "$DRY_RUN" == true ]]; then
-            would remove "$stale"
-        else
-            rm -f "$stale"
-            ok "opencode: removed duplicate plugin at $stale"
+    # Single-file copies from the opencode 1 days: opencode 2 refuses to load them
+    # (and plugin/ would fire every event twice). Remove them, if recognisably ours.
+    for stale in "$HOME/.config/opencode/plugin/tmux-status.js" \
+                 "$HOME/.config/opencode/plugins/tmux-status.js"; do
+        if [[ -f "$stale" ]] && grep -qE 'export const TmuxStatus|id: "tmux-status"' "$stale"; then
+            if [[ "$DRY_RUN" == true ]]; then
+                would remove "$stale"
+            else
+                rm -f "$stale"
+                ok "opencode: removed old plugin at $stale"
+            fi
         fi
-    fi
+    done
 
-    if [[ -f "$dest" ]] && [[ "$(cat "$dest")" == "$rendered" ]]; then
+    if [[ -f "$dest/tui.js" ]] && [[ "$(cat "$dest/tui.js")" == "$rendered" ]] \
+        && cmp -s "$src/server.js" "$dest/server.js"; then
         skip "opencode: plugin already current at $dest"
         return
     fi
@@ -290,8 +294,9 @@ wire_opencode() {
         would write "$dest"
         return
     fi
-    mkdir -p "$dir"
-    printf '%s\n' "$rendered" > "$dest"
+    mkdir -p "$dest"
+    cp "$src/server.js" "$dest/server.js"
+    printf '%s\n' "$rendered" > "$dest/tui.js"
     ok "opencode: plugin installed at $dest"
 }
 
